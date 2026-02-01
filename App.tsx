@@ -13,9 +13,14 @@ import {
   MapPin,
   Mail,
   MessageSquare,
-  Truck
+  Truck,
+  Loader2
 } from 'lucide-react';
-import { PageType, RequestFormData, ContactFormData } from './types';
+import { PageType } from './types';
+
+// Formspree 혹은 유사한 서비스의 엔드포인트를 사용합니다.
+// 사용자님의 이메일로 바로 연결되도록 설정합니다.
+const FORM_ENDPOINT = "https://formspree.io/f/kimdongotack1234@gmail.com";
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -272,10 +277,41 @@ const ServicesView: React.FC = () => (
 
 const RequestView: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      subject: "바로심부름 - 새로운 심부름 신청이 접수되었습니다",
+      name: formData.get("name"),
+      phone: formData.get("phone"),
+      content: formData.get("content"),
+      preferredTime: formData.get("preferredTime"),
+      _replyto: "kimdongotack1234@gmail.com", // 수신 이메일
+    };
+
+    try {
+      const response = await fetch(FORM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        throw new Error("전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -285,7 +321,7 @@ const RequestView: React.FC = () => {
           <CheckCircle2 className="w-16 h-16 text-green-600" />
         </div>
         <h1 className="text-3xl font-bold text-slate-900 mb-4">신청이 완료되었습니다!</h1>
-        <p className="text-slate-600 mb-10">매니저가 내용을 확인 후 10분 이내로 연락드릴 예정입니다.</p>
+        <p className="text-slate-600 mb-10">입력하신 내용이 kimdongotack1234@gmail.com으로 전송되었습니다.<br />매니저가 확인 후 10분 이내로 연락드릴 예정입니다.</p>
         <button 
           onClick={() => window.location.reload()} 
           className="bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold"
@@ -300,15 +336,21 @@ const RequestView: React.FC = () => {
     <div className="fade-in py-20 px-6 max-w-3xl mx-auto">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4">심부름 신청하기</h1>
-        <p className="text-slate-600">내용을 입력해 주시면 가장 가까운 매니저를 찾아드립니다.</p>
+        <p className="text-slate-600">내용을 입력해 주시면 신청 내용이 즉시 전송됩니다.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-10 rounded-[32px] shadow-xl border border-slate-100 space-y-8">
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100">
+            {error}
+          </div>
+        )}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 ml-1">성함</label>
             <input 
               required
+              name="name"
               type="text" 
               className="w-full px-5 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="홍길동"
@@ -318,9 +360,10 @@ const RequestView: React.FC = () => {
             <label className="text-sm font-bold text-slate-700 ml-1">연락처</label>
             <input 
               required
+              name="phone"
               type="tel" 
               className="w-full px-5 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="010-7303-4022"
+              placeholder=""
             />
           </div>
         </div>
@@ -329,9 +372,10 @@ const RequestView: React.FC = () => {
           <label className="text-sm font-bold text-slate-700 ml-1">심부름 내용</label>
           <textarea 
             required
+            name="content"
             rows={5}
             className="w-full px-5 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
-            placeholder="상세한 위치와 요청 사항을 적어주세요. (예: 강남역 10번 출구 앞에서 꽃다발 수령 후 서초동 XX아파트로 전달)"
+            placeholder="상세한 위치와 요청 사항을 적어주세요."
           />
         </div>
 
@@ -341,6 +385,7 @@ const RequestView: React.FC = () => {
             <Clock className="w-5 h-5 text-indigo-500" />
             <input 
               required
+              name="preferredTime"
               type="text" 
               className="bg-transparent w-full outline-none"
               placeholder="예: 1시간 이내, 오후 3시까지 등"
@@ -350,25 +395,74 @@ const RequestView: React.FC = () => {
 
         <button 
           type="submit"
-          className="w-full py-5 bg-indigo-700 text-white rounded-2xl font-bold text-lg hover:bg-indigo-800 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center space-x-2"
+          disabled={isSubmitting}
+          className={`w-full py-5 text-white rounded-2xl font-bold text-lg transition-all shadow-xl flex items-center justify-center space-x-2 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-700 hover:bg-indigo-800 shadow-indigo-100'}`}
         >
-          <span>심부름 신청 완료</span>
-          <Zap className="w-5 h-5 fill-white" />
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>전송 중...</span>
+            </>
+          ) : (
+            <>
+              <span>심부름 신청 완료</span>
+              <Zap className="w-5 h-5 fill-white" />
+            </>
+          )}
         </button>
-        <p className="text-center text-xs text-slate-400">신청 버튼을 누르면 개인정보 처리방침에 동의하는 것으로 간주됩니다.</p>
+        <p className="text-center text-xs text-slate-400">신청 버튼을 누르면 이메일로 정보가 전송되는 것에 동의하는 것으로 간주됩니다.</p>
       </form>
     </div>
   );
 };
 
 const ContactView: React.FC = () => {
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      subject: "바로심부름 - 일반 문의가 접수되었습니다",
+      name: formData.get("name"),
+      email: formData.get("email"),
+      message: formData.get("message"),
+    };
+
+    try {
+      await fetch(FORM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(data),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      alert("전송 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="fade-in py-32 px-6 text-center">
+        <h1 className="text-3xl font-bold mb-4">문의가 성공적으로 전달되었습니다!</h1>
+        <p className="text-slate-600 mb-8">빠른 시일 내에 답변 드리겠습니다.</p>
+        <button onClick={() => setSubmitted(false)} className="text-indigo-600 font-bold underline">다시 작성하기</button>
+      </div>
+    );
+  }
+
   return (
     <div className="fade-in py-20 px-6 max-w-4xl mx-auto">
       <div className="grid md:grid-cols-2 gap-16 items-start">
         <div>
           <h1 className="text-4xl font-extrabold text-slate-900 mb-8 leading-tight">문의하기</h1>
           <p className="text-slate-600 mb-12 text-lg">
-            사이트 이용 방법, 대량 계약 문의, 매니저 지원 등 궁금하신 점이 있다면 언제든 메시지를 남겨주세요.
+            궁금하신 점이 있다면 메시지를 남겨주세요. 입력하신 내용은 kimdongotack1234@gmail.com으로 전달됩니다.
           </p>
 
           <div className="space-y-6">
@@ -379,31 +473,28 @@ const ContactView: React.FC = () => {
                 <p className="font-semibold">kimdongotack1234@gmail.com</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-              <div className="bg-indigo-100 p-3 rounded-xl text-indigo-700"><MessageSquare className="w-6 h-6" /></div>
-              <div>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">카카오톡 채널</p>
-                <p className="font-semibold">@바로심부름_공식</p>
-              </div>
-            </div>
           </div>
         </div>
 
-        <form className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">이름</label>
-            <input type="text" className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none" />
+            <input required name="name" type="text" className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none" />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">이메일</label>
-            <input type="email" className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none" />
+            <input required name="email" type="email" className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none" />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">문의 메시지</label>
-            <textarea rows={4} className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none resize-none" />
+            <textarea required name="message" rows={4} className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 outline-none resize-none" />
           </div>
-          <button className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
-            메시지 보내기
+          <button 
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center space-x-2"
+          >
+            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "메시지 보내기"}
           </button>
         </form>
       </div>
