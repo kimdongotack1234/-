@@ -117,7 +117,7 @@ const App: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-start space-x-3 text-sm">
                 <Phone className="w-5 h-5 text-indigo-400 shrink-0" />
-                <span>010-XXXX-XXXX<br /><span className="text-xs text-slate-500">(24시간 상담 가능)</span></span>
+                <span>010-7303-4022<br /><span className="text-xs text-slate-500">(24시간 상담 가능)</span></span>
               </div>
               <div className="flex items-start space-x-3 text-sm">
                 <MapPin className="w-5 h-5 text-indigo-400 shrink-0" />
@@ -320,7 +320,7 @@ const RequestView: React.FC = () => {
               required
               type="tel" 
               className="w-full px-5 py-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="010-1234-5678"
+              placeholder="010-7303-4022"
             />
           </div>
         </div>
@@ -376,7 +376,7 @@ const ContactView: React.FC = () => {
               <div className="bg-indigo-100 p-3 rounded-xl text-indigo-700"><Mail className="w-6 h-6" /></div>
               <div>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">이메일 문의</p>
-                <p className="font-semibold">help@baro-errand.com</p>
+                <p className="font-semibold">kimdongotack1234@gmail.com</p>
               </div>
             </div>
             <div className="flex items-center space-x-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
