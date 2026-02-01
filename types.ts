@@ -1,4 +1,3 @@
-
 export type PageType = 'home' | 'request' | 'services' | 'contact';
 
 export interface RequestFormData {

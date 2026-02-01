@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Instagram, 
@@ -18,9 +17,8 @@ import {
 } from 'lucide-react';
 import { PageType } from './types';
 
-// Formspree 혹은 유사한 서비스의 엔드포인트를 사용합니다.
-// 사용자님의 이메일로 바로 연결되도록 설정합니다.
-const FORM_ENDPOINT = "https://formspree.io/f/kimdongotack1234@gmail.com";
+// 사용자가 제공한 Formspree 엔드포인트 ID로 업데이트합니다.
+const FORM_ENDPOINT = "https://formspree.io/f/xkozobzb";
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -81,8 +79,8 @@ const App: React.FC = () => {
       <main className="flex-grow pt-20">
         {currentPage === 'home' && <HomeView navigate={navigate} />}
         {currentPage === 'services' && <ServicesView />}
-        {currentPage === 'request' && <RequestView />}
-        {currentPage === 'contact' && <ContactView />}
+        {currentPage === 'request' && <RequestView navigate={navigate} />}
+        {currentPage === 'contact' && <ContactView navigate={navigate} />}
       </main>
 
       {/* Footer */}
@@ -275,7 +273,7 @@ const ServicesView: React.FC = () => (
   </div>
 );
 
-const RequestView: React.FC = () => {
+const RequestView: React.FC<{ navigate: (p: PageType) => void }> = ({ navigate }) => {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -292,7 +290,6 @@ const RequestView: React.FC = () => {
       phone: formData.get("phone"),
       content: formData.get("content"),
       preferredTime: formData.get("preferredTime"),
-      _replyto: "kimdongotack1234@gmail.com", // 수신 이메일
     };
 
     try {
@@ -321,9 +318,9 @@ const RequestView: React.FC = () => {
           <CheckCircle2 className="w-16 h-16 text-green-600" />
         </div>
         <h1 className="text-3xl font-bold text-slate-900 mb-4">신청이 완료되었습니다!</h1>
-        <p className="text-slate-600 mb-10">입력하신 내용이 kimdongotack1234@gmail.com으로 전송되었습니다.<br />매니저가 확인 후 10분 이내로 연락드릴 예정입니다.</p>
+        <p className="text-slate-600 mb-10">입력하신 내용이 성공적으로 전송되었습니다.<br />매니저가 확인 후 10분 이내로 연락드릴 예정입니다.</p>
         <button 
-          onClick={() => window.location.reload()} 
+          onClick={() => navigate('home')} 
           className="bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold"
         >
           확인
@@ -416,7 +413,7 @@ const RequestView: React.FC = () => {
   );
 };
 
-const ContactView: React.FC = () => {
+const ContactView: React.FC<{ navigate: (p: PageType) => void }> = ({ navigate }) => {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -451,7 +448,7 @@ const ContactView: React.FC = () => {
       <div className="fade-in py-32 px-6 text-center">
         <h1 className="text-3xl font-bold mb-4">문의가 성공적으로 전달되었습니다!</h1>
         <p className="text-slate-600 mb-8">빠른 시일 내에 답변 드리겠습니다.</p>
-        <button onClick={() => setSubmitted(false)} className="text-indigo-600 font-bold underline">다시 작성하기</button>
+        <button onClick={() => navigate('home')} className="bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold">확인 (홈으로)</button>
       </div>
     );
   }
@@ -462,7 +459,7 @@ const ContactView: React.FC = () => {
         <div>
           <h1 className="text-4xl font-extrabold text-slate-900 mb-8 leading-tight">문의하기</h1>
           <p className="text-slate-600 mb-12 text-lg">
-            궁금하신 점이 있다면 메시지를 남겨주세요. 입력하신 내용은 kimdongotack1234@gmail.com으로 전달됩니다.
+            궁금하신 점이 있다면 메시지를 남겨주세요. 모든 문의는 관리자에게 전달됩니다.
           </p>
 
           <div className="space-y-6">
